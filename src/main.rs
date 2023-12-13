@@ -1,3 +1,6 @@
+use std::fs;
+
 fn main() {
-    println!("Hello, world!");
+    let program = fs::read("data/INVADERS").expect("Failed to read file");
+    println!("{}", program.len());
 }
