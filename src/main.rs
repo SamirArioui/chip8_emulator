@@ -1,22 +1,13 @@
 use std::fs;
 
-struct Ram {
     memory: [u8; 4096],
 }
 
-impl Ram {
-    fn new() -> Ram {
-        Ram { memory: [0; 4096] }
     }
 
-    fn write_byte(&mut self, address: usize, value: u8) {
-        self.memory[address] = value;
     }
 
-    fn read_byte(&mut self, address: usize) -> u8 {
-        self.memory[address]
     }
-}
 
 struct Register {
     v0: u8,
@@ -48,11 +39,4 @@ struct Display {
 }
 
 fn main() {
-    let program = fs::read("data/TETRIS").expect("Failed to read file");
-    let offset: usize = 0x200;
-    let mut ram = Ram::new();
-    for (i, item) in program.iter().enumerate() {
-        ram.memory[i + offset] = *item;
-    }
-    println!("program: {} - memory: {}", program[0], ram.memory[offset])
 }
