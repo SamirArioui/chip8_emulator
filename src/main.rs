@@ -1,5 +1,29 @@
 use std::fs;
 
+#[derive(Debug)]
+struct Register {
+    v: [u8; 16],
+    i: u16,
+    pc: usize,
+    dt: u8,
+    st: u8,
+    sp: usize,
+    stack: [usize; 16],
+}
+
+impl Register {
+    fn new(offset: usize) -> Self {
+        Register {
+            v: [0; 16],
+            i: 0,
+            pc: offset,
+            dt: 0,
+            st: 0,
+            sp: 0,
+            stack: [0; 16],
+        }
+    }
+}
     memory: [u8; 4096],
 }
 
@@ -9,33 +33,7 @@ use std::fs;
 
     }
 
-struct Register {
-    v0: u8,
-    v1: u8,
-    v2: u8,
-    v3: u8,
-    v4: u8,
-    v5: u8,
-    v6: u8,
-    v7: u8,
-    v8: u8,
-    v9: u8,
-    v_a: u8,
-    v_b: u8,
-    v_c: u8,
-    v_d: u8,
-    v_e: u8,
-    v_f: u8,
-    i: u16,
-    pc: u16,
-    dt: u8,
-    st: u8,
-    sp: u8,
-    stack: [u16; 16],
-}
 
-struct Display {
-    screen: [[u8; 64]; 32],
 }
 
 fn main() {
