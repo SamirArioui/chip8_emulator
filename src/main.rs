@@ -56,27 +56,30 @@ impl Chip8 {
         op1 | op2
     }
 
-    fn ld_i(&mut self) {
-        let opcode = self.get_curr_opcode();
+    fn ld_i(&mut self, opcode: u16) {
         self.register.i = opcode & 0x0FFF;
         self.register.pc += 2;
     }
 
-    fn call(&mut self) {
-        let opcode = self.get_curr_opcode();
+    fn call(&mut self, opcode: u16) {
         self.register.sp += 1;
         self.register.stack[self.register.sp] = self.register.pc;
         self.register.pc = (opcode & 0x0FFF) as usize;
     }
 
-    fn ld_vx_byte(&mut self) {
-        let opcode = self.get_curr_opcode();
+    fn ld_vx_byte(&mut self, opcode: u16) {
         let vx = ((opcode & 0x0F00) >> 8) as usize;
         let byte = (opcode & 0x00FF) as u8;
         self.register.v[vx] = byte;
         self.register.pc += 2;
     }
 
+    fn add_vx_byte(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0F00) >> 8) as usize;
+        let byte = (opcode & 0x00FF) as u8;
+        self.register.v[vx] += byte;
+        self.register.pc += 2;
+    }
     fn ret(&mut self) {
         self.register.pc = self.register.stack[self.register.sp];
         self.register.sp -= 1;
