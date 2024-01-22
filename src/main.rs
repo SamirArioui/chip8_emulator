@@ -85,6 +85,18 @@ impl Chip8 {
         self.register.sp -= 1;
         self.register.pc += 2;
     }
+
+    fn run_opcode(&mut self, opcode: u16) {
+        println!("{:X}", opcode);
+        match opcode {
+            0x2000..=0x2fff => self.call(opcode),
+            0x00ee..=0x00ee => self.ret(),
+            0x6000..=0x6fff => self.ld_vx_byte(opcode),
+            0xa000..=0xafff => self.ld_i(opcode),
+            0x7000..=0x7fff => self.add_vx_byte(opcode),
+            _ => println!("UKNOWN INSTRUCTION"),
+        }
+    }
 }
 
 fn main() {
