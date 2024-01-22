@@ -26,10 +26,6 @@ impl Register {
     }
 }
 
-struct Display {
-    screen: [[u8; 64]; 32],
-}
-
 #[derive(Debug)]
 struct Chip8 {
     memory: [u8; 4096],
@@ -81,6 +77,7 @@ impl Chip8 {
         self.register.v[vx] += byte;
         self.register.pc += 2;
     }
+
     fn ret(&mut self) {
         self.register.pc = self.register.stack[self.register.sp];
         self.register.sp -= 1;
