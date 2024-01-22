@@ -1,4 +1,5 @@
 use std::fs;
+use std::io;
 
 #[derive(Debug)]
 struct Register {
@@ -104,21 +105,17 @@ fn main() {
     let offset = 0x200;
     let mut chip8 = Chip8::new(offset);
     chip8.load_program(path);
-
-    println!("opcode: {:X}", chip8.get_curr_opcode());
-    chip8.ld_i();
-    println!("register: {:#X?}", chip8.register);
-    println!("opcode: {:X}", chip8.get_curr_opcode());
-    chip8.call();
-    println!("register: {:#X?}", chip8.register);
-    println!("opcode: {:X}", chip8.get_curr_opcode());
-    chip8.ld_vx_byte();
-    println!("register: {:#X?}", chip8.register);
-    println!("opcode: {:X}", chip8.get_curr_opcode());
-    chip8.ld_vx_byte();
-    println!("register: {:#X?}", chip8.register);
-    println!("opcode: {:X}", chip8.get_curr_opcode());
-    chip8.ret();
-    println!("register: {:#X?}", chip8.register);
-    println!("opcode: {:X}", chip8.get_curr_opcode());
+    loop {
+        println!("Continue(y/n):");
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Invalide input");
+        let input = input.trim();
+        let opcode = chip8.get_curr_opcode();
+        // println!("Current opcode: {:X}", opcode);
+        if input == "y" {
+            chip8.run_opcode(opcode);
+        } else {
+            break;
+        };
+    }
 }
