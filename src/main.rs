@@ -27,9 +27,23 @@ impl Register {
 }
 
 #[derive(Debug)]
+struct Display {
+    screen: [[u8; 64]; 32],
+}
+
+impl Display {
+    fn new() -> Self {
+        Display {
+            screen: [[0; 64]; 32],
+        }
+    }
+}
+
+#[derive(Debug)]
 struct Chip8 {
     memory: [u8; 4096],
     register: Register,
+    display: Display,
 }
 
 impl Chip8 {
@@ -37,6 +51,7 @@ impl Chip8 {
         Chip8 {
             memory: [0; 4096],
             register: Register::new(offset),
+            display: Display::new(),
         }
     }
 
@@ -108,7 +123,7 @@ fn main() {
         io::stdin().read_line(&mut input).expect("Invalide input");
         let input = input.trim();
         let opcode = chip8.get_curr_opcode();
-        // println!("Current opcode: {:X}", opcode);
+        println!("Current opcode: {:X}", opcode);
         if input == "y" {
             chip8.run_opcode(opcode);
         } else {
