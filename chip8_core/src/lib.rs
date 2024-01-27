@@ -79,6 +79,17 @@ pub impl Chip8 {
         let opcode = self.fetch();
     }
 
+    pub fn tick_timers(&mut self) {
+        if self.dt > 0 {
+            self.dt -= 1;
+        }
+        if self.st > 0 {
+            if self.st == 1 {
+                println!("BEEP")
+            }
+            self.st -= 1;
+        }
+    }
 
     fn fetch(&mut self) -> u16 {
         let higher_byte = self.ram[self.pc as usize] as u16;
