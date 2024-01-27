@@ -113,9 +113,9 @@ impl Chip8 {
         self.sp += 1;
     }
 
-    fn push(&mut self) {
+    fn pop(&mut self) -> u16 {
         self.sp -= 1;
-        self.stack[self.sp as usize];
+        self.stack[self.sp as usize]
     }
 
     fn load_program(&mut self, path: String) {
