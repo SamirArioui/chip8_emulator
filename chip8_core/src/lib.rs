@@ -63,6 +63,7 @@ impl Chip8 {
 
     pub fn tick(&mut self) {
         let opcode = self.fetch();
+        self.execute(opcode);
     }
 
     pub fn tick_timers(&mut self) {
@@ -108,6 +109,18 @@ impl Chip8 {
         opcode
     }
 
+    fn execute(&mut self, opcode: u16) {
+        let d1 = (opcode & 0xf000) >> 12;
+        let d2 = (opcode & 0x0f00) >> 8;
+        let d3 = (opcode & 0x00f0) >> 4;
+        let d4 = opcode & 0x000f;
+
+        match (d1, d2, d3, d4) {
+            (0, 0, 0, 0) => (),
+            (0, 0, 0xe, 0) => self.clr(),
+            _ => unimplemented!("Unimplemented opcode: {:X}", opcode),
+        }
+    }
     fn push(&mut self, val: u16) {
         self.stack[self.sp as usize] = val;
         self.sp += 1;
