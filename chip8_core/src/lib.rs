@@ -1,11 +1,10 @@
 use std::fs;
-use std::io;
 
 const RAM_SIZE: usize = 4096;
 const NUM_REG: usize = 16;
 const STACK_SIZE: usize = 16;
 const START_ADDR: u16 = 0x200;
-const NUM_KEYS: usize;
+const NUM_KEYS: usize = 16;
 const FONTSET_SIZE: usize = 80;
 const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -37,28 +36,15 @@ pub struct Chip8 {
     v_reg: [u8; NUM_REG],
     i_reg: u16,
     sp: u16,
-    stack: [u8; STACK_SIZE],
+    stack: [u16; STACK_SIZE],
     keys: [bool; NUM_KEYS],
     dt: u8,
     st: u8,
 }
 
-pub impl Chip8 {
-    pub fn new() -> Self {
-        let mut new_emu = Self {
-            pc: START_ADDR,
-            ram: [0; RAM_SIZE],
-            screen: [false; SCREEN_WIDTH * SCREEN_WIDTH],
-            v_reg: [0; NUM_REG],
-            i_reg: 0,
-            sp: 0,
-            stack: [0; STACK_SIZE],
-            keys: [false; NUM_KEYS],
-            dt: 0,
-            st: 0,
-        };
-        new_emu.ram[..FONTSET_SIZE].copy_from_slice(&FONTSET);
-        new_emu
+impl Chip8 {
+    pub fn new(&mut self) -> Self {
+        self.default()
     }
 
     pub fn reset(&mut self) {
@@ -91,6 +77,22 @@ pub impl Chip8 {
         }
     }
 
+    fn default(&mut self) -> Self {
+        let mut default_emu = Self {
+            pc: START_ADDR,
+            ram: [0; RAM_SIZE],
+            screen: [false; SCREEN_WIDTH * SCREEN_WIDTH],
+            v_reg: [0; NUM_REG],
+            i_reg: 0,
+            sp: 0,
+            stack: [0; STACK_SIZE],
+            keys: [false; NUM_KEYS],
+            dt: 0,
+            st: 0,
+        };
+        default_emu.ram[..FONTSET_SIZE].copy_from_slice(&FONTSET);
+        default_emu
+    }
     fn fetch(&mut self) -> u16 {
         let higher_byte = self.ram[self.pc as usize] as u16;
         let lower_byte = self.ram[(self.pc + 1) as usize] as u16;
