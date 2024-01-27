@@ -77,6 +77,13 @@ impl Chip8 {
         }
     }
 
+    pub fn load_program(&mut self, path: String) {
+        let program = fs::read(path).expect("Failed to read file");
+        for (i, item) in program.iter().enumerate() {
+            self.ram[i + self.pc as usize] = *item;
+        }
+    }
+
     fn default(&mut self) -> Self {
         let mut default_emu = Self {
             pc: START_ADDR,
