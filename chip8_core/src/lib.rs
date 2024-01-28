@@ -1,3 +1,4 @@
+use core::f32;
 use rand::random;
 use std::fs;
 
@@ -119,28 +120,40 @@ impl Chip8 {
 
         match (d1, d2, d3, d4) {
             (0, 0, 0, 0) => (),
-            (0, 0, 0xe, 0) => self.clr(),
-            (0, 0, 0xe, 0xe) => self.ret(),
-            (0x1, 0, 0, 0) => self.jump(opcode),
-            (0x2, 0, 0, 0) => self.call(opcode),
-            (0x3, 0, 0, 0) => self.se_vx_byte(opcode),
-            (0x4, 0, 0, 0) => self.sne_vx_byte(opcode),
-            (0x5, 0, 0, 0) => self.se_vx_vy(opcode),
-            (0x6, 0, 0, 0) => self.ld_vx_byte(opcode),
-            (0x7, 0, 0, 0) => self.add_vx_byte(opcode),
-            (0x8, 0, 0, 0) => self.ld_vx_vy(opcode),
-            (0x8, 0, 0, 1) => self.or_vx_vy(opcode),
-            (0x8, 0, 0, 2) => self.and_vx_vy(opcode),
-            (0x8, 0, 0, 3) => self.xor_vx_vy(opcode),
-            (0x8, 0, 0, 4) => self.add_vx_vy(opcode),
-            (0x8, 0, 0, 5) => self.sub_vx_vy(opcode),
-            (0x8, 0, 0, 6) => self.shr_vx_vy(opcode),
-            (0x8, 0, 0, 7) => self.subn_vx_vy(opcode),
-            (0x8, 0, 0, 0xe) => self.shl_vx_vy(opcode),
-            (0x9, 0, 0, 0) => self.sne_vx_vy(opcode),
-            (0xa, 0, 0, 0) => self.ld_i(opcode),
-            (0xb, 0, 0, 0) => self.jump_v0(opcode),
-            (0xc, 0, 0, 0) => self.rnd_vx(opcode),
+            (_, _, 0xe, 0) => self.clr(),
+            (_, _, 0xe, 0xe) => self.ret(),
+            (0x1, _, _, _) => self.jump(opcode),
+            (0x2, _, _, _) => self.call(opcode),
+            (0x3, _, _, _) => self.se_vx_byte(opcode),
+            (0x4, _, _, _) => self.sne_vx_byte(opcode),
+            (0x5, _, _, _) => self.se_vx_vy(opcode),
+            (0x6, _, _, _) => self.ld_vx_byte(opcode),
+            (0x7, _, _, _) => self.add_vx_byte(opcode),
+            (0x8, _, _, 0x0) => self.ld_vx_vy(opcode),
+            (0x8, _, _, 0x1) => self.or_vx_vy(opcode),
+            (0x8, _, _, 0x2) => self.and_vx_vy(opcode),
+            (0x8, _, _, 0x3) => self.xor_vx_vy(opcode),
+            (0x8, _, _, 0x4) => self.add_vx_vy(opcode),
+            (0x8, _, _, 0x5) => self.sub_vx_vy(opcode),
+            (0x8, _, _, 0x6) => self.shr_vx_vy(opcode),
+            (0x8, _, _, 0x7) => self.subn_vx_vy(opcode),
+            (0x8, _, _, 0xe) => self.shl_vx_vy(opcode),
+            (0x9, _, _, _) => self.sne_vx_vy(opcode),
+            (0xa, _, _, _) => self.ld_i(opcode),
+            (0xb, _, _, _) => self.jump_v0(opcode),
+            (0xc, _, _, _) => self.rnd_vx(opcode),
+            (0xd, _, _, _) => self.drw_vx_vy(opcode),
+            (0xe, _, 0x9, 0xe) => self.skp_vx(opcode),
+            (0xe, _, 0xa, 0x1) => self.sknp_vx(opcode),
+            (0xf, _, 0x0, 0x7) => self.ld_vx_dt(opcode),
+            (0xf, _, 0x0, 0xa) => self.ld_vx_k(opcode),
+            (0xf, _, 0x1, 0x5) => self.ld_dt_vx(opcode),
+            (0xf, _, 0x1, 0x8) => self.ld_st_vx(opcode),
+            (0xf, _, 0x1, 0xe) => self.add_i_vx(opcode),
+            (0xf, _, 0x2, 0x9) => self.ld_f_vx(opcode),
+            (0xf, _, 0x3, 0x3) => self.ld_b_vx(opcode),
+            (0xf, _, 0x5, 0x5) => self.ld_i_vx(opcode),
+            (0xf, _, 0x6, 0x5) => self.ld_vx_i(opcode),
             _ => unimplemented!("Unimplemented opcode: {:X}", opcode),
         }
     }
@@ -294,5 +307,115 @@ impl Chip8 {
         let byte = (opcode & 0x00ff) as u8;
         let rng: u8 = random();
         self.v_reg[vx] = rng & byte;
+    }
+
+    fn drw_vx_vy(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let vy = ((opcode & 0x00f0) >> 4) as usize;
+        let n_rows = opcode & 0x000f;
+        let x0 = self.v_reg[vx] as u16;
+        let y0 = self.v_reg[vy] as u16;
+        let mut flipped = false;
+        for y_line in 0..n_rows {
+            let addr = self.i_reg + y_line;
+            let pixels = self.ram[addr as usize];
+            for x_line in 0..8 {
+                if (pixels & (0b1000_0000 >> x_line)) != 0 {
+                    let x = (x0 + x_line) as usize % SCREEN_WIDTH;
+                    let y = (y0 + y_line) as usize % SCREEN_HEIGHT;
+                    let idx = x + SCREEN_WIDTH * y;
+                    flipped |= self.screen[idx];
+                    self.screen[idx] ^= true;
+                }
+            }
+        }
+        if flipped {
+            self.v_reg[0xf] = 1;
+        } else {
+            self.v_reg[0xf] = 0;
+        }
+    }
+
+    fn skp_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let key = self.v_reg[vx] as usize;
+        if self.keys[key] {
+            self.pc += 2;
+        }
+    }
+
+    fn sknp_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let key = self.v_reg[vx] as usize;
+        if !self.keys[key] {
+            self.pc += 2;
+        }
+    }
+
+    fn ld_vx_dt(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        self.v_reg[vx] = self.dt;
+    }
+
+    fn ld_vx_k(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let mut pressed = true;
+        for i in 0..self.keys.len() {
+            if self.keys[i] {
+                self.v_reg[vx] = i as u8;
+                pressed = true;
+                break;
+            }
+        }
+        if !pressed {
+            self.pc -= 2;
+        }
+    }
+
+    fn ld_dt_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        self.dt = self.v_reg[vx];
+    }
+
+    fn ld_st_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        self.st = self.v_reg[vx];
+    }
+
+    fn add_i_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        self.i_reg = self.i_reg.wrapping_add(self.v_reg[vx] as u16);
+    }
+
+    fn ld_f_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        self.i_reg = self.v_reg[vx] as u16 * 5;
+    }
+
+    fn ld_b_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let vx_value = self.v_reg[vx] as f32;
+        let hundreds = (vx_value / 100.0).floor() as u8;
+        let tens = ((vx_value / 10.0) % 10.0).floor() as u8;
+        let ones = (vx_value % 10.0) as u8;
+        self.ram[self.i_reg as usize] = hundreds;
+        self.ram[(self.i_reg + 1) as usize] = tens;
+        self.ram[(self.i_reg + 2) as usize] = ones;
+    }
+
+    fn ld_i_vx(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let i = self.i_reg as usize;
+        for idx in 0..=vx {
+            self.ram[i + idx] = self.v_reg[idx];
+        }
+    }
+
+    fn ld_vx_i(&mut self, opcode: u16) {
+        let vx = ((opcode & 0x0f00) >> 8) as usize;
+        let i = self.i_reg as usize;
+        for idx in 0..=vx {
+            self.v_reg[idx] = self.ram[i + idx];
+        }
     }
 }
