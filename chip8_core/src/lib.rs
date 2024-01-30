@@ -234,8 +234,7 @@ impl Chip8 {
     fn add_vx_byte(&mut self, opcode: u16) {
         let vx = ((opcode & 0x0f00) >> 8) as usize;
         let byte = (opcode & 0x00ff) as u8;
-        // TODO: use wrapping_add for overflow panic
-        self.v_reg[vx] += byte;
+        self.v_reg[vx] = self.v_reg[vx].wrapping_add(byte);
     }
 
     fn ld_vx_vy(&mut self, opcode: u16) {
