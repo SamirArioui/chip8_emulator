@@ -44,9 +44,28 @@ pub struct Chip8 {
     st: u8,
 }
 
+impl Default for Chip8 {
+    fn default() -> Self {
+        let mut default_emu = Self {
+            pc: START_ADDR,
+            ram: [0; RAM_SIZE],
+            screen: [false; SCREEN_WIDTH * SCREEN_WIDTH],
+            v_reg: [0; NUM_REG],
+            i_reg: 0,
+            sp: 0,
+            stack: [0; STACK_SIZE],
+            keys: [false; NUM_KEYS],
+            dt: 0,
+            st: 0,
+        };
+        default_emu.ram[..FONTSET_SIZE].copy_from_slice(&FONTSET);
+        default_emu
+    }
+}
+
 impl Chip8 {
-    pub fn new(&mut self) -> Self {
-        self.default()
+    pub fn new() -> Self {
+        Default::default()
     }
 
     pub fn reset(&mut self) {
@@ -99,23 +118,6 @@ impl Chip8 {
         for (i, item) in program.iter().enumerate() {
             self.ram[i + self.pc as usize] = *item;
         }
-    }
-
-    fn default(&mut self) -> Self {
-        let mut default_emu = Self {
-            pc: START_ADDR,
-            ram: [0; RAM_SIZE],
-            screen: [false; SCREEN_WIDTH * SCREEN_WIDTH],
-            v_reg: [0; NUM_REG],
-            i_reg: 0,
-            sp: 0,
-            stack: [0; STACK_SIZE],
-            keys: [false; NUM_KEYS],
-            dt: 0,
-            st: 0,
-        };
-        default_emu.ram[..FONTSET_SIZE].copy_from_slice(&FONTSET);
-        default_emu
     }
 
     fn fetch(&mut self) -> u16 {
