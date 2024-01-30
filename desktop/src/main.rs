@@ -53,6 +53,22 @@ fn main() {
             chip8.tick();
         }
         chip8.tick_timers();
+        draw_screen(&chip8, &mut canvas);
     }
 }
 
+fn draw_screen(chip8: &Chip8, canvas: &mut Canvas<Window>) {
+    canvas.set_draw_color(Color::RGB(0, 255, 0));
+    canvas.clear();
+    let screen_buf = chip8.get_display();
+    canvas.set_draw_color(Color::RGB(255, 255, 255));
+    for (i, pixel) in screen_buf.iter().enumerate() {
+        if *pixel {
+            let x = (i % SCREEN_WIDTH) as u32;
+            let y = (i / SCREEN_HEIGHT) as u32;
+            let rect = Rect::new((x * SCALE) as i32, (y * SCALE) as i32, SCALE, SCALE);
+            canvas.fill_rect(rect).unwrap();
+        }
+    }
+    canvas.present();
+}
